@@ -117,5 +117,18 @@ FROM
     HAVING COUNT(district_code) > 1) AS conflicting_codes;
 -- Result : 13 district codes have more than one district names
 
+-- 10. Completeness: states that do not have data for all 4 years
+--     Found because Q3 in 06 returned 88 rows instead of 108 (27 x 4).
+SELECT
+    state_name,
+    COUNT(DISTINCT insurance_year)                  AS years_present,
+    STRING_AGG(DISTINCT insurance_year::text, ', ') AS years_with_data,
+    COUNT(*) OVER ()                                AS incomplete_states
+FROM clean_insurance
+GROUP BY state_name
+HAVING COUNT(DISTINCT insurance_year) < 4
+ORDER BY years_present, state_name;
+-- Result : 11 states lack data for some years (20 missing state-years in total).
+
 
 
